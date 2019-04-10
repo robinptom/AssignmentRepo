@@ -16,6 +16,7 @@ namespace WindowsFormsApp1
         public Form1()
         {
             InitializeComponent();
+            
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -45,21 +46,26 @@ namespace WindowsFormsApp1
                     for (int i = 0; i < wordCount; i++)
                     {
                         currWord = words[i];
-                        if (i<wordCount-1)
+                        Search.AddKeyWord(currWord, txtFile.Name);
+                        if (i < wordCount - 1)
                         {
                             nextWord = words[i + 1];
                             if (currWord == nextWord)
                             {
                                 repeatCounter++;
-                                sortedWords.Add(currWord + "," + repeatCounter);
                                 continue;
                             }
-                            else
-                            {
-                                sortedWords.Add(currWord);
-                            }
-                            repeatCounter = 1;
                         }
+                        if (repeatCounter > 1)
+                            {
+                                sortedWords.Add(currWord + "," + repeatCounter);
+                            }
+                        else
+                        {
+                            sortedWords.Add(currWord);
+                        }
+                            repeatCounter = 1;
+                    }
                         sortedWords.Add(currWord);                                     
                     
                     }
