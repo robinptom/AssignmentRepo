@@ -30,9 +30,10 @@ namespace WindowsFormsApp1
                 string contents;
                 string[] words;
 
-                foreach (FileInfo txtFile in allTxtFiles)
+                 foreach (FileInfo txtFile in allTxtFiles)
                 {
                     contents = File.ReadAllText(txtFile.FullName);
+                    listOfFiles.Add(txtFile.Name);
                     words = contents.Split('\n', '\r', ' ');
                     Array.Sort(words);
                     int wordCount = words.Length;
@@ -46,7 +47,6 @@ namespace WindowsFormsApp1
                     for (int i = 0; i < wordCount; i++)
                     {
                         currWord = words[i];
-                        Search.AddKeyWord(currWord, txtFile.Name);
                         if (i < wordCount - 1)
                         {
                             nextWord = words[i + 1];
