@@ -1,0 +1,151 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace SEFinalCode
+{
+    public partial class Form1 : Form
+    {
+        public Form1()
+        {
+            InitializeComponent();
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
+        public static string GetOperationFormExpression(string expression)
+        {
+            if (expression.Contains("+"))
+            {
+                return "+";
+            }
+            if (expression.Contains("-"))
+            {
+                return "-";
+            }
+            if (expression.Contains("*"))
+            {
+                return "*";
+            }
+            if (expression.Contains("/"))
+            {
+                return "/";
+            }
+            if (expression.Contains("%"))
+            {
+                return "%";
+            }
+            if (expression.Contains("^"))
+            {
+                return "^";
+            }
+            return "nothing";
+        }
+        public static string[] GetSplitStringBasedOnOperation(string expression, char operation)
+        {
+            return expression.Split(operation);
+        }
+        public static float GetResult(float number1, float number2, char operation)
+        {
+            switch (operation)
+            {
+                case '+':
+                    return number1 + number2;
+                //break;
+                case '-':
+                    return number1 - number2;
+                //break;
+                case '*':
+                    return number1 * number2;
+                //break;
+                case '/':
+                    return number1 / number2;
+                //break;
+                case '%':
+                    return number1 % number2;
+                //break;
+                case '^':
+                    return (float)Math.Pow(number1, number2);
+                //break;
+                default:
+                    return 0;
+            }
+        }
+        private void btncalc_Click(object sender, EventArgs e)
+        {
+            listBox1.Hide();
+            if (FBD.ShowDialog() == DialogResult.OK)
+            {
+                DirectoryInfo folder = new DirectoryInfo(FBD.SelectedPath);
+                FileInfo[] allCalcFiles = folder.GetFiles("*.calc");
+                int index = listBox4.Items.Count;
+                listBox4.Items.Insert(index, FBD.SelectedPath);
+
+                //DateTime now = DateTime.Now;
+                lblPath.Text = "Selected Folder";
+                lblPath.Show();
+                //listBox1.Items.Insert(index, now);
+                listBox4.Show();
+                List<string> finalResult = new List<string>();
+                List<string> resultStrings = new List<string>();
+                List<string> listOfCalcFiles = new List<string>();
+                foreach (FileInfo calcFile in allCalcFiles)
+                {
+                    string content;
+                    content = File.ReadAllText(calcFile.FullName);
+                    listOfCalcFiles.Add(calcFile.Name);
+                    string[] calculations;
+                    calculations = content.Split('\n');
+                    
+                    foreach (string calculation in calculations)
+                    {
+                        string currExpr;
+                        currExpr = calculation;
+                        Search.AddcalcKeyWord(currExpr, calcFile.Name);
+                        listBox2.Items.Add(calculation);
+                        lblContent.Text = "Available Expresiions:";
+                        listBox2.Show();
+                        lblContent.Show();
+                        string operation = GetOperationFormExpression(calculation.Trim());
+                        if (operation == "nothing")
+                        {
+                            Console.WriteLine("Uh-oh ! Found no operators in this line:" + calculation.Trim());
+                            //Console.WriteLine(calculation.Trim());
+                        }
+                        else
+                        {
+                            string[] splitLine = GetSplitStringBasedOnOperation(calculation.Trim(), operation.ToCharArray()[0]);
+                            if (splitLine.Length != 2)
+                            {
+                                MessageBox.Show("Uh-oh ! Found more or less than 2 numbers in this line:" + calculation.Trim());
+                                //Console.WriteLine(calculation.Trim());
+                            }
+                            else
+                            {
+                                float number1 = float.Parse(splitLine[0], CultureInfo.InvariantCulture.NumberFormat);
+                                float number2 = float.Parse(splitLine[1], CultureInfo.InvariantCulture.NumberFormat);
+                                float result = (float)Math.Round(GetResult(number1, number2, operation.ToCharArray()[0]), 2);
+                                string resultString = number1 + " " + operation + " " + number2 + " = " + result;
+                                resultStrings.Add(resultString);
+                            }
+                        }
+                    }
+                    finalResult = resultStrings;
+                    
+                }
+                string n = string.Format("{0:yyyy-MM-dd_hh-mm-ss-tt}.answ", DateTime.Now);
+                File.WriteAllText(Path.Combine(FBD.SelectedPath, n), string.Join(Environment.NewLine, finalResult));
+                Search.AddToCalcDirectory(index, listOfCalcFiles);
+                lblDoneMsg.Text = "Calculation Completed: ";
+            }
+        }
